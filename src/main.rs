@@ -8,6 +8,7 @@ fn main
 
 use trpl::Html;
 
+/*
 async fn pageTitle
 (url: &str) -> Option<String>
 {   /*
@@ -18,4 +19,17 @@ async fn pageTitle
     Html::parse(&responseText)
     .select_first("title")
     .map(|titleElement| titleElement.inner_html())
+}
+*/
+
+fn pageTitle
+(url: &str) -> impl Future<Output = Option<String>> + '_
+{
+    async move
+    {
+        let text = trpl::get(url).await.text().await;
+        Html::parse(&text)
+        .select_first("title")
+        .map(|title| title.inner_html())
+    }
 }
