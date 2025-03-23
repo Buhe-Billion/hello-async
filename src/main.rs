@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use trpl::Html;
+use trpl::{Either,Html};
 
 fn main
 ()
@@ -10,11 +10,21 @@ fn main
     (
         async
         {
-            let url = &args[1];
-            match pageTitle(url).await
+            let titleFuture1 = pageTitle(&args[1]);
+            let titleFuture2 = pageTitle(&args[2]);
+
+            let (url,maybeTitle) =
+            match trpl::race(titleFuture1,titleFuture2).await
             {
-                Some(title) => println!("The title for {url} was {title}"),
-                None        => println!("{url} had no title"),
+                Either::Left(left) => left,
+                Either::Right(right) => right,
+            };
+
+            println!("{url} returned first");
+            match maybeTitle
+            {
+                Some(title) => println!("Its page title is: '{title}'"),
+                None        => println!("Its title could not be parsed"),
             }
         }
     )
@@ -34,6 +44,7 @@ async fn pageTitle
 }
 */
 //these 2 functions are equivalent
+/*
 fn pageTitle
 (url: &str) -> impl Future<Output = Option<String>> + '_
 {
@@ -44,4 +55,16 @@ fn pageTitle
         .select_first("title")
         .map(|title| title.inner_html())
     }
+}
+*/
+
+async fn pageTitle
+(url: &str) -> (&str, Option<String>)
+{
+    let text = trpl::get(url).await.text().await;
+    let title = Html::parse(&text)
+    .select_first("title")
+    .map(|title| title.inner_html());
+
+    (url,title)
 }
