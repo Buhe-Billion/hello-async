@@ -1,12 +1,24 @@
 #![allow(non_snake_case)]
 
+use trpl::Html;
+
 fn main
 ()
 {
-
+    let args: Vec<String> = std::env::args().collect();
+    trpl::run
+    (
+        async
+        {
+            let url = &args[1];
+            match pageTitle(url).await
+            {
+                Some(title) => println!("The title for {url} was {title}"),
+                None        => println!("{url} had no title"),
+            }
+        }
+    )
 }
-
-use trpl::Html;
 
 /*
 async fn pageTitle
@@ -21,7 +33,7 @@ async fn pageTitle
     .map(|titleElement| titleElement.inner_html())
 }
 */
-
+//these 2 functions are equivalent
 fn pageTitle
 (url: &str) -> impl Future<Output = Option<String>> + '_
 {
