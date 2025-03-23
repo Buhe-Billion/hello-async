@@ -58,6 +58,7 @@ fn pageTitle
 }
 */
 
+/*
 async fn pageTitle
 (url: &str) -> (&str, Option<String>)
 {
@@ -67,4 +68,22 @@ async fn pageTitle
     .map(|title| title.inner_html());
 
     (url,title)
+}
+*/
+
+fn pageTitle
+(url: &str) -> impl Future <Output = (&str, Option<String>)> + '_
+//for the life of me, I couldn't switch it out to:
+//<lifetime,type> () -> type
+//where type: trait1 + trait2 ...
+{
+    async move
+    {
+        let text = trpl::get(url).await.text().await;
+        let title = Html::parse(&text)
+        .select_first("title")
+        .map(|title| title.inner_html());
+
+        (url,title)
+    }
 }
